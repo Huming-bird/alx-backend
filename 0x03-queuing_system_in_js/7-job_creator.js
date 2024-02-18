@@ -1,5 +1,4 @@
-// A script to track job progress
-import { createQueue } from 'kue';
+import kue from 'kue';
 
 const jobs = [
   {
@@ -48,18 +47,15 @@ const jobs = [
   }
 ];
 
-const queue = createQueue();
+const queue = kue.createQueue();
 
-jobs.forEach((myJob) => {
-  let job = queue.create('push_notification_code_2', myJob).save((error) => {
-    if (!error) console.log(`Notification job created: ${job.id}`);
+for (const jobData of jobs) {
+  const job = queue.create('push_notification_code_2', jobData).save((err) => {
+    if (!err) console.log(`Notification job created: ${job.id}`);
   });
-
-  job.on('complete', function() {
+  job.on('complete', () => {
     console.log(`Notification job ${job.id} completed`);
-  }).on('failed', function(error) {
-    console.log(`Notification job ${job.id} failed: ${error}`);
-  }).on('progress', function(progress, data) {
-    console.log(`Notification job ${job.id} ${progress}% complete`);
-  });
-});
+  })
+    .on('failed', (error) => console.log(`Notification job ${job.id} failed: ${error}`))
+    .on('progress', (progress) => console.log(`Notification job ${job.id} ${progress}% complete`));
+}

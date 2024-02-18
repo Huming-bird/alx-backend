@@ -1,33 +1,25 @@
-// A script that connects to the Redis server and print the passed in args
 import { createClient, print } from 'redis';
 import { promisify } from 'util';
 
 const client = createClient();
-
-client.on('connect', function() {
+client.on('error', error => console.log(`Redis client not connected to the server: ${error}`));
+client.on('ready', () => {
   console.log('Redis client connected to the server');
+  displaySchoolValue('Holberton');
+  setNewSchool('HolbertonSanFrancisco', '100');
+  displaySchoolValue('HolbertonSanFrancisco');
 });
 
-client.on('error', function (err) {
-  console.log(`Redis client not connected to the server: ${err}`);
-});
-
-function setNewSchool(schoolName, value) {
+function setNewSchool (schoolName, value) {
   client.set(schoolName, value, print);
-};
-
-const get = promisify(client.get).bind(client);
-
-async function displaySchoolValue(schoolName) {
-  const result = await get(schoolName).catch((error) => {
-    if (error) {
-      console.log(error);
-      throw error;
-    }
-  });
-  console.log(result);
 }
 
-displaySchoolValue('Holberton');
-setNewSchool('HolbertonSanFrancisco', '100');
-displaySchoolValue('HolbertonSanFrancisco');
+async function displaySchoolValue (schoolName) {
+  const get = promisify(client.get).bind(client);
+  try {
+    const data = await get(schoolName);
+    console.log(data);
+  } catch (error) {
+    console.log(error);
+  }
+}

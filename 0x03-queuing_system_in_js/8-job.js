@@ -1,23 +1,18 @@
-// A job creation script
-function createPushNotificationsJobs(jobs, queue) {
+const queueName = 'push_notification_code_3';
+
+function createPushNotificationsJobs (jobs, queue) {
   if (!Array.isArray(jobs)) {
-    throw Error('Jobs is not an array');
+    throw new Error('Jobs is not an array');
   }
-
-  jobs.forEach((myJob) => {
-    let job = queue.create('push_notification_code_3', myJob);
-
-    job.on('complete', function() {
-      console.log(`Notification job ${job.id} completed`);
-    }).on('failed', function(error) {
-      console.log(`Notification job ${job.id} failed: ${error}`);
-    }).on('progress', function(progress, data) {
-      console.log(`Notification job ${job.id} ${progress}% complete`);
-    });
-    job.save((error) => {
-      if (!error) console.log(`Notification job created: ${job.id}`);
-    });
-  });
+  for (const jobData of jobs) {
+    const job = queue.create(queueName, jobData)
+      .save((err) => {
+        if (!err) console.log(`Notification job created: ${job.id}`);
+      });
+    job.on('complete', () => console.log(`Notification job ${job.id} completed`))
+      .on('failed', (err) => console.log(`Notification job ${job.id} failed: ${err}`))
+      .on('progress', (prog) => console.log(`Notification job ${job.id} ${prog}% complete`));
+  }
 }
 
 module.exports = createPushNotificationsJobs;

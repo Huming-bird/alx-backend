@@ -1,30 +1,20 @@
-// A script that connects to Redis server and print the pased arg
 import { createClient, print } from 'redis';
 
 const client = createClient();
-
-client.on('connect', function() {
+client.on('error', error => console.log(`Redis client not connected to the server: ${error}`));
+client.on('ready', () => {
   console.log('Redis client connected to the server');
+  displaySchoolValue('Holberton');
+  setNewSchool('HolbertonSanFrancisco', '100');
+  displaySchoolValue('HolbertonSanFrancisco');
 });
 
-client.on('error', function (err) {
-  console.log(`Redis client not connected to the server: ${err}`);
-});
-
-function setNewSchool(schoolName, value) {
+function setNewSchool (schoolName, value) {
   client.set(schoolName, value, print);
-};
-
-function displaySchoolValue(schoolName) {
-  client.get(schoolName, function(error, result) {
-    if (error) {
-      console.log(error);
-      throw error;
-    }
-    console.log(result);
-  });
 }
 
-displaySchoolValue('Holberton');
-setNewSchool('HolbertonSanFrancisco', '100');
-displaySchoolValue('HolbertonSanFrancisco');
+function displaySchoolValue (schoolName) {
+  client.get(schoolName, (err, reply) => {
+    if (!err) console.log(reply);
+  });
+}

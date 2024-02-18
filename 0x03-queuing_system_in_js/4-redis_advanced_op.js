@@ -1,29 +1,16 @@
-// A script that connects to Redis server and print the passed in args in hash
 import { createClient, print } from 'redis';
 
-const redisClient = createClient();
-
-redisClient.on('connect', function() {
+const id = 'HolbertonSchools';
+const info = ['Portland=50', 'Seattle=80', 'New York=20', 'Bogota=20', 'Cali=40', 'Paris=2'];
+const client = createClient();
+client.on('error', error => console.log(`Redis client not connected to the server: ${error}`));
+client.on('ready', () => {
   console.log('Redis client connected to the server');
-});
-
-redisClient.on('error', function(error) {
-  console.log(`Redis client not connected to the server: ${error}`);
-});
-
-// hash key-values in list
-redisClient.hset('HolbertonSchools', 'Portland', '50', print);
-redisClient.hset('HolbertonSchools', 'Seattle', '80', print);
-redisClient.hset('HolbertonSchools', 'New York', '20', print);
-redisClient.hset('HolbertonSchools', 'Bogota', '20', print);
-redisClient.hset('HolbertonSchools', 'Cali', '40', print);
-redisClient.hset('HolbertonSchools', 'Paris', '2', print);
-
-// gets all elements stored in the list
-redisClient.hgetall('HolbertonSchools', function (error, result) {
-  if (error) {
-    console.log(error);
-    throw error;
+  for (const data of info) {
+    const [key, field] = data.split('=');
+    client.hset(id, key, field, print);
   }
-  console.log(result);
+  client.hgetall(id, (err, msg) => {
+    if (!err) console.log(msg);
+  });
 });
